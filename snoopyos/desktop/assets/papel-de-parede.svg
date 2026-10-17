@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="924" viewBox="0 0 1536 924">
+  <title>SnoopyOS — Curvas</title>
+  <desc>Papel de parede vetorial baseado no desenho fornecido pelo usuário</desc>
+  <rect width="1536" height="924" fill="#00aaff"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M204 -66 C330 6 351 112 409 249 S487 473 660 480 S868 471 994 414 S1120 392 1194 502 L1335 711 Q1398 772 1418 858" stroke="#2168fe" stroke-width="76"/>
+    <path d="M-83 292 C72 244 163 210 231 264 S334 420 417 538 S528 752 644 751 S837 704 938 672 S1046 595 1063 537 S1065 347 1029 273 S896 224 840 195 S777 147 798 103 L891 -31" stroke="#00ffab" stroke-width="72"/>
+    <path d="M1001 652 L1053 798 M922 714 Q882 760 892 831 C998 810 1182 752 1292 710 S1364 660 1360 574 S1337 481 1316 418 S1312 316 1333 255 S1334 179 1374 108 S1429 20 1559 10" stroke="#00ffab" stroke-width="72"/>
+  </g>
+</svg>

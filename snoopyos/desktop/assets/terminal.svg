@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <title>Terminal</title>
+  <rect x="5" y="6" width="118" height="116" rx="7" fill="#000"/>
+  <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M28 25 L59 42 L28 61"/>
+    <path d="M80 72 L108 71"/>
+  </g>
+</svg>

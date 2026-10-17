@@ -1,0 +1,39 @@
+/* Apenas a área de trabalho e o painel recebem este estilo */
+.xfce4-panel, .xfce4-panel.background {
+    background-color: #fef1bc;
+    background-image: none;
+    color: #050505;
+    border: none;
+    box-shadow: none;
+}
+.xfce4-panel button {
+    background-image: none;
+    background-color: transparent;
+    color: #050505;
+    border: none;
+    border-radius: 8px;
+    box-shadow: none;
+    padding: 6px 12px;
+}
+.xfce4-panel button:hover {
+    background-color: rgba(0, 170, 255, 0.16);
+}
+.xfce4-panel button:checked {
+    background-color: rgba(0, 170, 255, 0.23);
+}
+#applicationmenu-button label {
+    font-family: "DejaVu Sans";
+    font-size: 44px;
+    font-weight: 400;
+    padding: 0 12px 0 2px;
+}
+XfdesktopIconView.view {
+    color: #050505;
+    background-color: transparent;
+    text-shadow: none;
+    font-family: "DejaVu Sans Mono";
+}
+XfdesktopIconView.view:selected {
+    color: #050505;
+    background-color: rgba(254, 241, 188, 0.55);
+}
