@@ -126,13 +126,30 @@ exit 1
                 ppm = work / "screen.ppm"
                 execute("screendump", {"filename": str(ppm)})
                 Image.open(ppm).save(output / name)
+            deadline = time.monotonic() + 240
+            while True:
+                screenshot("SnoopyOS-Lite-last-frame.png")
+                frame = Image.open(output / "SnoopyOS-Lite-last-frame.png").convert("RGB")
+                pixels = list(frame.resize((160, 100)).getdata())
+                blue = sum(r < 80 and g > 100 and b > 180 for r, g, b in pixels) / len(pixels)
+                green = sum(r < 90 and g > 200 and 80 < b < 220 for r, g, b in pixels) / len(pixels)
+                footer = list(frame.crop((0, frame.height - 70, frame.width, frame.height)).resize((160, 10)).getdata())
+                cream = sum(r > 220 and g > 210 and 120 < b < 220 for r, g, b in footer) / len(footer)
+                print(f"Renderização: azul={blue:.3f}, verde={green:.3f}, barra={cream:.3f}", flush=True)
+                if blue > 0.15 and green > 0.01 and cream > 0.55:
+                    break
+                if time.monotonic() > deadline:
+                    raise RuntimeError("O papel de parede e a barra ainda não foram renderizados")
+                time.sleep(5)
+            execute("human-monitor-command", {"command-line": "sendkey ctrl-alt-t"})
+            time.sleep(20)
             screenshot("SnoopyOS-Lite-desktop.png")
             execute("human-monitor-command", {"command-line": "sendkey meta_l"})
-            time.sleep(3)
+            time.sleep(15)
             screenshot("SnoopyOS-Lite-menu.png")
             (output / "SnoopyOS-validacao.json").write_text(json.dumps({
                 "uefiBoot": True, "desktop": "Xfce", "customization": True,
-                "terminalShortcut": True, "dpkgAudit": "passed", "aptCheck": "passed",
+                "terminalShortcut": True, "renderedWallpaper": True, "panelVisible": True, "dpkgAudit": "passed", "aptCheck": "passed",
                 "diskInstallationTested": False
             }, indent=2) + "\n")
             print("Boot UEFI, Xfce personalizado e Terminal verificados", flush=True)

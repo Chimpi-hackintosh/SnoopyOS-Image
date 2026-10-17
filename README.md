@@ -1,73 +1,59 @@
-# 🐾 SnoopyOS-image
+# 🐾 SnoopyOS
+
 <img width="1536" height="924" alt="ChatGPT Image Oct 16, 2026, 05_01_24 PM" src="https://github.com/user-attachments/assets/a91c68e9-87fd-4b83-a589-9b4b1c6f4aae" />
-**SnoopyOS-image** is a repository dedicated to the development, hosting, and maintenance of pre-configured images and custom environments for **SnoopyOS**. It provides compatibility for a diverse range of hardware scenarios, drawing from projects within enthusiast communities.
 
-The goal of this project is to provide a clean, optimized, and deployment-ready image, reducing the time spent on post-installation configuration and the fine-tuning of kexts/drivers.
+Sistema Linux live de 64 bits com base Debian 13.7, Xfce e área de trabalho personalizada
 
----
+## Baixar a edição Lite
 
-## 🛠️ Repository Contents
+[**Baixar SnoopyOS-0.1-Lite-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SnoopyOS-0.1-Lite-amd64.iso)
 
-*   **System Images:** Image files (`.img`, `.iso`, or raw) optimized for quick booting and installation.
-*   **EFI Folders / Bootloaders:** Configuration files structured to ensure initial compatibility with various chipsets and processors.
-*   **Patches and Tweaks:** Post-installation utility scripts for performance optimization, power management, and graphics acceleration.
+Tamanho: **1,954 GiB** — **2.097.676.288 bytes**, abaixo de 2 GiB
 
----
+[SHA-256](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SHA256SUMS.txt) · [Notas e arquivos da versão](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/tag/v0.1-lite.2)
 
-## 🚀 How to Use the Image
+Baixe a ISO como um único arquivo e use-a como unidade óptica de uma máquina virtual de 64 bits
+A configuração de teste usa 3 GiB de RAM
+O usuário live é `snoopy` e a senha é `live`
 
-### Prerequisites
-*   A flash drive or external storage device with a minimum capacity of **16GB** (recommended).
-*   An image-flashing tool (such as **BalenaEtcher**, **Rufus** in DD mode, or the `dd` utility via the terminal).
+Montar o arquivo no Windows abre os arquivos da imagem
+Para iniciar o SnoopyOS, dê boot pela ISO na máquina virtual
+O modo live não preserva alterações após desligar
 
-### Installation (via Linux/macOS CLI)
+## Área de trabalho
 
-1.  **Download the latest version** from the [Releases](https://github.com) tab.
-2.  **Identify your target drive** (e.g., `/dev/sdX` or `/dev/diskX`). 3.  **Write the image to the device** by executing the command below (replace the image path and drive identifier with your actual details):
+Papel de parede azul com curvas verdes e azuis, barra creme, menu Snoopy + e atalhos do Terminal
 
-```bash
-sudo dd if=SnoopyOS-v1.0.img of=/dev/sdX bs=4M status=progress && sync
-```
+- `Ctrl + Alt + T` abre o Terminal
+- `Super` abre o menu
+- Mantém Thunar, Firefox ESR em português, áudio, rede e Calamares
 
----
+## Como a imagem ficou menor
 
-## ⚙️ Recommended BIOS Settings
+Foram removidos LibreOffice, ajuda e traduções extras, fontes Noto adicionais/CJK, métodos de entrada IBus e parte dos firmwares
+As traduções da interface mantêm português e inglês
+Os firmwares básicos Atheros, Intel Wi-Fi e Realtek permanecem
+Alguns computadores físicos podem precisar de firmware adicional para gráficos, áudio ou rede
 
-To ensure the system boots without crashes (*kernel panics*), please configure your motherboard as follows:
+O instalador Calamares e os pacotes locais necessários ao GRUB permanecem
+O Debian Installer alternativo e os arquivos de instalação associados foram retirados
 
-| Setting | Recommended Status |
-| :--- | :--- |
-| **SATA Mode** | AHCI |
-| **Secure Boot** | Disabled |
-| **Fast Boot** | Disabled |
-| **VT-d** | Enabled (or Disabled, depending on the applied patches) |
-| **Above 4G Decoding** | Enabled |
+## Verificação
 
----
+A construção verifica o SHA-256 da base, a consistência dos pacotes, as dependências, o catálogo BIOS/UEFI e o limite de tamanho
+O boot UEFI, a personalização do Xfce e o atalho do Terminal foram verificados em QEMU
+A instalação completa em disco ainda não foi testada
 
-## 📂 Repository Structure
+![SnoopyOS Lite em execução](docs/SnoopyOS-Lite-desktop.png)
 
-```text
-SnoopyOS-image/
-├── EFI/                # Bootloader files (OpenCore/Clover/GRUB)
-├── Patches/            # ACPI fixes, kernel patches, and essential Kexts
-├── Scripts/            # Automated tools for partition mounting
-└── README.md           # Main project documentation
-```
+## Construir a ISO
 
----
+A receita está em [snoopyos/lite](snoopyos/lite) e as instruções completas estão no [README da edição Lite](snoopyos/lite/README-Lite.md)
 
-## 🤝 How to Contribute
+O [workflow do GitHub Actions](.github/workflows/publish-lite.yml) só publica a imagem depois dos testes de tamanho e boot
+Os dados exatos de cada imagem e o commit da receita acompanham a Release
 
-If you have tested the image on specific hardware and would like to share your feedback or submit fixes to the file structure:
+Esta versão é uma prévia de desenvolvimento
+As ferramentas deste repositório seguem a [licença do projeto](LICENSE)
+Os pacotes Debian conservam suas próprias licenças
 
-1. **Fork** this repository.
-2. Create a branch for your changes (`git checkout -b feature/efi-improvement`).
-3. Submit a **Pull Request**, providing detailed information about the hardware used in your tests (CPU, GPU, Motherboard).
-
----
-
-## 📄 Legal Notes and License
-This project is intended strictly for educational purposes and the study of operating system architecture. All trademarks belong to their respective owners. Distributed under the **Apache 2.0** license.
-
-If, in the midst of all this, you republish my project without our authorization, you will receive a DMCA takedown notice.
