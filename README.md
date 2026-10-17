@@ -70,4 +70,4 @@ If you have tested the image on specific hardware and would like to share your f
 ## 📄 Legal Notes and License
 This project is intended strictly for educational purposes and the study of operating system architecture. All trademarks belong to their respective owners. Distributed under the **Apache 2.0** license.
 
-This project is intended strictly for educational purposes and the study of operating system architecture. All trademarks belong to their respective owners. Distributed under the **MIT** license.
+If, in the midst of all this, you republish my project without our authorization, you will receive a DMCA takedown notice.
