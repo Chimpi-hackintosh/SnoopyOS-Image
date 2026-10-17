@@ -19,3 +19,9 @@ path-include=/usr/share/locale/pt*
 path-include=/usr/share/locale/en*
 """)
 print(f"Diretórios de traduções extras removidos: {removed}")
+lists = root / "var/lib/apt/lists"
+for path in lists.iterdir():
+    if path.is_file() and path.name != "lock":
+        path.unlink()
+print("Índices antigos do APT limpos; apt update os recria")
+

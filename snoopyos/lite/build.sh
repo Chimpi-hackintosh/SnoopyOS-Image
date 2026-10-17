@@ -15,8 +15,10 @@ OFFSET=$(python3 -c 'import re,sys; print(int(re.search(r"File data lba:\s*\d+\s
 unsquashfs -o "$OFFSET" -d "$WORK/rootfs" -processors 2 -no-xattrs -no-progress "$BASE"
 bash "$SOURCE/lite/purge-root.sh" "$WORK/rootfs" "$SOURCE/lite/pacotes-removidos.json" "$WORK" | tee "$(dirname "$OUTPUT")/SnoopyOS-Lite-pacotes.log"
 python3 "$SOURCE/lite/prune-languages.py" "$WORK/rootfs"
-mksquashfs "$WORK/rootfs" "$WORK/filesystem.squashfs" -noappend -comp xz -b 1M -Xbcj x86 -processors 2 -mem 512M -no-xattrs -no-progress
-python3 "$SOURCE/remasterizar-iso.py" "$BASE" "$OUTPUT" --lite-filesystem "$WORK/filesystem.squashfs" --lite-packages "$WORK/filesystem.packages" --lite-removed "$SOURCE/lite/pacotes-removidos.json"
+mksquashfs "$WORK/rootfs" "$WORK/filesystem.squashfs" -noappend -comp xz -b 1M -Xbcj x86 -processors "$(nproc)" -mem 512M -no-xattrs -no-progress
+INITRD=$(find "$WORK/rootfs/boot" -maxdepth 1 -type f -name 'initrd.img-*' | head -n 1)
+test -n "$INITRD"
+python3 "$SOURCE/remasterizar-iso.py" "$BASE" "$OUTPUT" --lite-filesystem "$WORK/filesystem.squashfs" --lite-packages "$WORK/filesystem.packages" --lite-removed "$SOURCE/lite/pacotes-removidos.json" --lite-initrd "$INITRD"
 python3 - "$OUTPUT" <<'PY'
 from pathlib import Path
 import sys
@@ -24,3 +26,4 @@ p=Path(sys.argv[1]);n=p.stat().st_size
 assert n < 2*1024**3, f'Limite excedido: {n} bytes'
 print(f'{p.name}: {n} bytes = {n/1024**3:.3f} GiB')
 PY
+

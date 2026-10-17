@@ -37,11 +37,13 @@ def main():
     parser.add_argument("--lite-filesystem", type=Path, help="SquashFS reduzido com dpkg consistente")
     parser.add_argument("--lite-packages", type=Path, help="Manifesto dpkg-query da edição Lite")
     parser.add_argument("--lite-removed", type=Path, help="Lista JSON dos pacotes removidos")
+    parser.add_argument("--lite-initrd", type=Path, help="Initramfs regenerado depois da redução")
     args = parser.parse_args()
     lite = args.lite_filesystem is not None
     if lite != (args.lite_packages is not None):
         parser.error("--lite-filesystem e --lite-packages devem ser usados juntos")
     edition = "0.1 Lite Preview" if lite else "0.1 Preview"
+    boot_parameters = PARAMETERS + (" console=tty0 console=ttyS0,115200n8" if lite else "")
     base, output = args.base.resolve(), args.saida.resolve()
     for name in ("xorriso", "unsquashfs", "mksquashfs"):
         if not shutil.which(name):
@@ -179,7 +181,7 @@ unpack:
         normal = re.sub(r'^menuentry "[^"]*"', 'menuentry "Iniciar SnoopyOS 0.1' + (' Lite' if lite else '') + ' (64 bits)"', first.group(0))
         safe = failsafe.group(0).replace('"Live system (amd64 fail-safe mode)"', '"SnoopyOS - modo de compatibilidade"')
         def parameters(text):
-            return "\n".join(line.replace(" " + PARAMETERS, "") + " " + PARAMETERS if re.match(r"\s*linux\s+/live/", line) else line
+            return "\n".join(line.replace(" " + PARAMETERS, "") + " " + boot_parameters if re.match(r"\s*linux\s+/live/", line) else line
                              for line in text.splitlines())
         grub.write_text("source /boot/grub/config.cfg\nset default=0\nset timeout=5\n\n" +
                         parameters(normal) + "\n\n" + parameters(safe) + "\n")
@@ -188,7 +190,7 @@ unpack:
         text = text.replace("Live system (amd64 fail-safe mode)", "SnoopyOS - modo de compatibilidade")
         if lite:
             text = text.replace("Iniciar SnoopyOS 0.1 (64 bits)", "Iniciar SnoopyOS 0.1 Lite (64 bits)")
-        live.write_text("\n".join(line.replace(" " + PARAMETERS, "") + " " + PARAMETERS if line.strip().startswith("append ") else line
+        live.write_text("\n".join(line.replace(" " + PARAMETERS, "") + " " + boot_parameters if line.strip().startswith("append ") else line
                                   for line in text.splitlines()) + "\n")
         menu = extract("/isolinux/menu.cfg")
         menu.write_text(menu.read_text().replace("menu title Boot menu\x07", "menu title SnoopyOS " + edition)
@@ -214,6 +216,13 @@ unpack:
                              "/dists/trixie/main/debian-installer", "/dists/trixie/non-free-firmware"]
             mappings["/live/filesystem.squashfs"] = args.lite_filesystem.resolve()
             mappings["/live/filesystem.packages"] = args.lite_packages.resolve()
+            if args.lite_initrd:
+                live_files = command(["xorriso", "-indev", str(base), "-find", "/live", "-type", "f", "-exec", "report_lba", "--"])
+                initrd_paths = re.findall(r"'(/live/initrd\.img[^']*)'", live_files)
+                if not initrd_paths:
+                    raise RuntimeError("Initramfs da base não encontrado")
+                for path in initrd_paths:
+                    mappings[path] = args.lite_initrd.resolve()
             if args.lite_removed:
                 mappings["/PACOTES-REMOVIDOS.json"] = args.lite_removed.resolve()
             # Conserva o repositório local usado pelo Calamares para instalar GRUB
@@ -268,6 +277,7 @@ unpack:
             stream.seek(16 * 2048 + 813)
             volume_date = stream.read(16).decode("ascii")
         cmd = ["xorriso", "-indev", str(base), "-outdev", str(output),
+               "-hardlinks", "on",
                "-boot_image", "any", "replay", "-volid", "SNOOPYOSLITE" if lite else "SNOOPYOS01",
                "-volume_date", "uuid", volume_date]
         for path in removed_paths:
@@ -295,3 +305,4 @@ unpack:
 
 if __name__ == "__main__":
     main()
+

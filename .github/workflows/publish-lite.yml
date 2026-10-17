@@ -1,0 +1,84 @@
+name: Construir e publicar SnoopyOS Lite
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'snoopyos/**'
+      - '.github/workflows/publish-lite.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snoopyos-lite
+  cancel-in-progress: false
+
+jobs:
+  iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar ferramentas e espaço
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get update -qq
+          sudo apt-get install -y xorriso squashfs-tools qemu-system-x86 ovmf python3-pil
+          mkdir -p dist
+          df -h /
+      - name: Baixar a base Debian verificada
+        run: |
+          URL=$(python3 -c 'import json; print(json.load(open("snoopyos/remaster/BASE-DEBIAN.json"))["url"])')
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 30 "$URL" -o "$RUNNER_TEMP/debian-base.iso"
+          python3 - "$RUNNER_TEMP/debian-base.iso" <<'PY'
+          import hashlib,json,sys
+          expected=json.load(open('snoopyos/remaster/BASE-DEBIAN.json'))['sha256']
+          with open(sys.argv[1],'rb') as f:
+              value=hashlib.file_digest(f,'sha256').hexdigest()
+          assert value == expected, f'Base incorreta: {value}'
+          print('SHA-256 da base confirmado:',value)
+          PY
+      - name: Gerar a ISO menor que 2 GiB
+        run: |
+          sudo bash snoopyos/lite/build.sh "$RUNNER_TEMP/debian-base.iso" "$GITHUB_WORKSPACE/dist/SnoopyOS-0.1-Lite-amd64.iso"
+      - name: Verificar boot UEFI e área de trabalho
+        run: |
+          python3 -u snoopyos/lite/check-boot.py dist/SnoopyOS-0.1-Lite-amd64.iso dist
+      - name: Preparar os dados da imagem
+        run: |
+          cp snoopyos/lite/README-Lite.md dist/README-Lite.md
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path('dist/SnoopyOS-0.1-Lite-amd64.iso')
+          size=p.stat().st_size
+          assert size < 2*1024**3
+          with p.open('rb') as f: checksum=hashlib.file_digest(f,'sha256').hexdigest()
+          data={'name':p.name,'sizeBytes':size,'sizeGiB':round(size/1024**3,4),'limitBytes':2*1024**3,'sha256':checksum,'sourceCommit':os.environ['GITHUB_SHA']}
+          Path('dist/SnoopyOS-imagem.json').write_text(json.dumps(data,indent=2)+'\n')
+          Path('dist/SHA256SUMS.txt').write_text(checksum+'  '+p.name+'\n')
+          notes=f'SnoopyOS 0.1 Lite Preview com base Debian 13.7 e Xfce\n\nISO única de {size:,} bytes ({size/1024**3:.3f} GiB), abaixo de 2 GiB\n\nBoot UEFI, personalização da área de trabalho, dependências e atalho do Terminal verificados em QEMU\n\nMantém Firefox, Thunar, Terminal e Calamares\n\nLibreOffice, fontes/traduções extras e parte dos firmwares foram retirados para reduzir a imagem\n\nAlguns computadores físicos podem precisar de firmware adicional\nA instalação completa em disco ainda não foi testada\n\nConsulte README-Lite.md e confira o SHA-256 antes de usar\n'
+          Path('dist/RELEASE.md').write_text(notes)
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f: f.write(notes+'\nSHA-256: `'+checksum+'`\n')
+          print(json.dumps(data,indent=2))
+          PY
+      - name: Salvar diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnoopyOS-Lite-verificacao
+          retention-days: 14
+          path: |
+            dist/*.txt
+            dist/*.log
+            dist/*.json
+            dist/*.png
+            dist/*.md
+      - name: Publicar ISO única na Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v0.1-lite.$GITHUB_RUN_NUMBER"
+          gh release create "$TAG" dist/SnoopyOS-0.1-Lite-amd64.iso dist/SHA256SUMS.txt dist/SnoopyOS-imagem.json dist/SnoopyOS-validacao.json dist/SnoopyOS-Lite-desktop.png dist/SnoopyOS-Lite-menu.png dist/README-Lite.md dist/SnoopyOS-boot.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SnoopyOS 0.1 Lite Preview" --notes-file dist/RELEASE.md --prerelease
