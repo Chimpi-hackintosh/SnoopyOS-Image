@@ -1,0 +1,89 @@
+name: Conferir visual da ISO Lite publicada
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/check-lite-render.py'
+      - '.github/workflows/check-lite-render.yml'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag da Release que deve ser verificada
+        required: true
+        default: v0.1-lite.2
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snoopyos-lite-render
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Selecionar a imagem
+        run: |
+          python3 - <<'PY'
+          import json,os,re
+          event=json.load(open(os.environ['GITHUB_EVENT_PATH']))
+          if os.environ['GITHUB_EVENT_NAME']=='workflow_run':
+              tag='v0.1-lite.'+str(event['workflow_run']['run_number'])
+          else:
+              tag=event.get('inputs',{}).get('tag','v0.1-lite.2')
+          assert re.fullmatch(r'v0\.1-lite\.\d+',tag), 'Tag inválida'
+          with open(os.environ['GITHUB_ENV'],'a') as f:f.write('RELEASE_TAG='+tag+'\n')
+          print('Verificando:',tag)
+          PY
+      - name: Preparar QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-x86 ovmf python3-pil
+          mkdir -p dist
+      - name: Baixar e conferir a ISO existente
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          READY=0
+          for ATTEMPT in $(seq 1 60); do
+            rm -f dist/SnoopyOS-0.1-Lite-amd64.iso dist/SHA256SUMS.txt
+            if gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern SnoopyOS-0.1-Lite-amd64.iso --pattern SHA256SUMS.txt --dir dist; then
+              READY=1
+              break
+            fi
+            echo 'Aguardando a ISO ser salva no rascunho'
+            sleep 20
+          done
+          test "$READY" = 1
+          cd dist
+          sha256sum --check SHA256SUMS.txt
+          python3 -c 'from pathlib import Path; p=Path("SnoopyOS-0.1-Lite-amd64.iso"); assert p.stat().st_size<2*1024**3; print(p.stat().st_size,"bytes")'
+      - name: Verificar o desktop depois da renderização
+        run: |
+          python3 -u .github/scripts/check-lite-render.py dist/SnoopyOS-0.1-Lite-amd64.iso dist
+      - name: Salvar capturas verificadas
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$RELEASE_TAG" = v0.1-lite.2 ]; then
+            for ATTEMPT in $(seq 1 60); do
+              STATE=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/39029847081" --jq .status)
+              if [ "$STATE" = completed ]; then break; fi
+              sleep 10
+            done
+            test "$STATE" = completed
+          fi
+          gh release upload "$RELEASE_TAG" dist/SnoopyOS-Lite-desktop.png dist/SnoopyOS-Lite-menu.png dist/SnoopyOS-validacao.json --repo "$GITHUB_REPOSITORY" --clobber
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: SnoopyOS-Lite-renderizacao
+          retention-days: 14
+          path: |
+            dist/*.png
+            dist/*.json
+            dist/*.log
