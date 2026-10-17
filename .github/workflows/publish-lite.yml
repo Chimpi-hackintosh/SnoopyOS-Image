@@ -43,6 +43,13 @@ jobs:
       - name: Gerar a ISO menor que 2 GiB
         run: |
           sudo bash snoopyos/lite/build.sh "$RUNNER_TEMP/debian-base.iso" "$GITHUB_WORKSPACE/dist/SnoopyOS-0.1-Lite-amd64.iso"
+          sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE/dist"
+      - name: Salvar a ISO em rascunho antes dos testes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v0.1-lite.$GITHUB_RUN_NUMBER"
+          gh release create "$TAG" dist/SnoopyOS-0.1-Lite-amd64.iso dist/SHA256SUMS.txt dist/SnoopyOS-boot.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SnoopyOS 0.1 Lite Preview" --notes "Imagem gerada abaixo de 2 GiB, aguardando conclusão do teste de boot" --prerelease --draft
       - name: Verificar boot UEFI e área de trabalho
         run: |
           python3 -u snoopyos/lite/check-boot.py dist/SnoopyOS-0.1-Lite-amd64.iso dist
@@ -81,4 +88,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="v0.1-lite.$GITHUB_RUN_NUMBER"
-          gh release create "$TAG" dist/SnoopyOS-0.1-Lite-amd64.iso dist/SHA256SUMS.txt dist/SnoopyOS-imagem.json dist/SnoopyOS-validacao.json dist/SnoopyOS-Lite-desktop.png dist/SnoopyOS-Lite-menu.png dist/README-Lite.md dist/SnoopyOS-boot.txt --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "SnoopyOS 0.1 Lite Preview" --notes-file dist/RELEASE.md --prerelease
+          gh release upload "$TAG" dist/SHA256SUMS.txt dist/SnoopyOS-imagem.json dist/SnoopyOS-validacao.json dist/SnoopyOS-Lite-desktop.png dist/SnoopyOS-Lite-menu.png dist/README-Lite.md dist/SnoopyOS-boot.txt --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --title "SnoopyOS 0.1 Lite Preview" --notes-file dist/RELEASE.md --prerelease --draft=false
