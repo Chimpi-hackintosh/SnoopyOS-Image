@@ -14,11 +14,12 @@ on:
         default: v0.1-lite.2
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
   group: snoopyos-lite-render
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   render:
