@@ -53,15 +53,16 @@ jobs:
           for ATTEMPT in $(seq 1 60); do
             rm -f dist/SnoopyOS-0.1-Lite-amd64.iso dist/SHA256SUMS.txt
             if gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern SnoopyOS-0.1-Lite-amd64.iso --pattern SHA256SUMS.txt --dir dist; then
-              READY=1
-              break
+              if (cd dist && test -s SnoopyOS-0.1-Lite-amd64.iso && test -s SHA256SUMS.txt && sha256sum --check SHA256SUMS.txt); then
+                READY=1
+                break
+              fi
             fi
             echo 'Aguardando a ISO ser salva no rascunho'
             sleep 20
           done
           test "$READY" = 1
           cd dist
-          sha256sum --check SHA256SUMS.txt
           python3 -c 'from pathlib import Path; p=Path("SnoopyOS-0.1-Lite-amd64.iso"); assert p.stat().st_size<2*1024**3; print(p.stat().st_size,"bytes")'
       - name: Verificar o desktop depois da renderização
         run: |
