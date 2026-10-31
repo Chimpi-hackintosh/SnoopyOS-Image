@@ -38,11 +38,15 @@ def main():
     parser.add_argument("--lite-packages", type=Path, help="Manifesto dpkg-query da edição Lite")
     parser.add_argument("--lite-removed", type=Path, help="Lista JSON dos pacotes removidos")
     parser.add_argument("--lite-initrd", type=Path, help="Initramfs regenerado depois da redução")
+    parser.add_argument("--games", action="store_true", help="Gerar SnoopyOS Games com painel de jogos")
     args = parser.parse_args()
     lite = args.lite_filesystem is not None
     if lite != (args.lite_packages is not None):
         parser.error("--lite-filesystem e --lite-packages devem ser usados juntos")
-    edition = "0.1 Lite Preview" if lite else "0.1 Preview"
+    if args.games and not lite:
+        parser.error("--games exige a receita Lite com filesystem e manifesto")
+    edition = "0.2 Games Preview" if args.games else ("0.1 Lite Preview" if lite else "0.1 Preview")
+    short_version = "0.2" if args.games else "0.1"
     boot_parameters = PARAMETERS + (" console=tty0 console=ttyS0,115200n8" if lite else "")
     base, output = args.base.resolve(), args.saida.resolve()
     for name in ("xorriso", "unsquashfs", "mksquashfs"):
@@ -88,6 +92,26 @@ def main():
 
         print("Preparando a personalização do sistema e do instalador", flush=True)
         shutil.copytree(ROOT / "desktop", overlay / "usr/share/snoopyos")
+        if args.games:
+            shutil.copy2(ROOT / "games/games.py", overlay / "usr/share/snoopyos/games.py")
+            write("etc/skel/.config/autostart/snoopyos-games.desktop", """[Desktop Entry]
+Type=Application
+Name=SnoopyOS Games Widgets
+Comment=Painel leve de CPU, RAM, disco e modo FPS
+Exec=/usr/bin/python3 /usr/share/snoopyos/games.py widget
+OnlyShowIn=XFCE;
+Terminal=false
+X-GNOME-Autostart-enabled=true
+""")
+            write("usr/share/applications/snoopyos-games.desktop", """[Desktop Entry]
+Type=Application
+Name=SnoopyOS Games
+Comment=Painel gamer com widgets leves
+Exec=/usr/bin/python3 /usr/share/snoopyos/games.py widget
+Icon=/usr/share/snoopyos/assets/snoopy-menu.svg
+Terminal=false
+Categories=Game;Utility;
+""")
         write("etc/skel/.config/autostart/snoopyos-primeiro-login.desktop", """[Desktop Entry]
 Type=Application
 Name=Configurar a área de trabalho SnoopyOS
@@ -126,6 +150,14 @@ O instalador Calamares foi configurado para copiar a base e a camada de personal
 
 Esta edição é uma prévia de desenvolvimento
 """)
+        if args.games:
+            readme_path = overlay / "usr/share/doc/snoopyos/README.md"
+            readme_path.write_text(readme_path.read_text().replace("0.1 Preview", edition) + """
+SnoopyOS Games oferece widgets leves, indicador de RAM/CPU e modo FPS reversível
+Abra SnoopyOS Games no menu e execute jogos pelo lançador para limpeza segura
+A limpeza não remove arquivos pessoais, saves nem os caches do Steam
+O desempenho e FPS real dependem dos jogos, drivers e hardware
+""")
         if lite:
             readme_path = overlay / "usr/share/doc/snoopyos/README.md"
             readme_path.write_text(readme_path.read_text().replace("0.1 Preview", edition) + """
@@ -153,8 +185,8 @@ unpack:
         branding = root_text("etc/calamares/branding/debian/branding.desc")
         replacements = {"componentName": "snoopyos", "productName": "SnoopyOS",
                         "shortProductName": "SnoopyOS", "version": edition,
-                        "shortVersion": "0.1", "versionedName": "SnoopyOS " + edition,
-                        "shortVersionedName": "SnoopyOS 0.1", "bootloaderEntryName": "SnoopyOS"}
+                        "shortVersion": short_version, "versionedName": "SnoopyOS " + edition,
+                        "shortVersionedName": "SnoopyOS " + short_version, "bootloaderEntryName": "SnoopyOS"}
         for key, value in replacements.items():
             branding = re.sub(rf"^(\s*{key}:)\s*.*$", rf"\1 {value}", branding, flags=re.M)
         branding = re.sub(r"^\s*donateUrl:.*\n", "", branding, flags=re.M)
@@ -178,7 +210,8 @@ unpack:
         failsafe = re.search(r'menuentry "(?:Live system \(amd64 fail-safe mode\)|SnoopyOS - modo de compatibilidade)".*?\n}', original_grub, re.S)
         if not first or not failsafe:
             raise RuntimeError("O menu de boot da base mudou")
-        normal = re.sub(r'^menuentry "[^"]*"', 'menuentry "Iniciar SnoopyOS 0.1' + (' Lite' if lite else '') + ' (64 bits)"', first.group(0))
+        boot_label = "Iniciar SnoopyOS " + ("0.2 Games" if args.games else ("0.1 Lite" if lite else "0.1")) + " (64 bits)"
+        normal = re.sub(r'^menuentry "[^"]*"', 'menuentry "' + boot_label + '"', first.group(0))
         safe = failsafe.group(0).replace('"Live system (amd64 fail-safe mode)"', '"SnoopyOS - modo de compatibilidade"')
         def parameters(text):
             return "\n".join(line.replace(" " + PARAMETERS, "") + " " + boot_parameters if re.match(r"\s*linux\s+/live/", line) else line
@@ -188,7 +221,9 @@ unpack:
         live = extract("/isolinux/live.cfg")
         text = live.read_text().replace("^Live system (amd64)", "^Iniciar SnoopyOS 0.1 (64 bits)")
         text = text.replace("Live system (amd64 fail-safe mode)", "SnoopyOS - modo de compatibilidade")
-        if lite:
+        if args.games:
+            text = text.replace("Iniciar SnoopyOS 0.1 (64 bits)", "Iniciar SnoopyOS 0.2 Games (64 bits)")
+        elif lite:
             text = text.replace("Iniciar SnoopyOS 0.1 (64 bits)", "Iniciar SnoopyOS 0.1 Lite (64 bits)")
         live.write_text("\n".join(line.replace(" " + PARAMETERS, "") + " " + boot_parameters if line.strip().startswith("append ") else line
                                   for line in text.splitlines()) + "\n")

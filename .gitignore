@@ -12,3 +12,11 @@
 
 pkg/
 src/
+
+# Imagens geradas e caches locais
+*.iso
+*.img
+__pycache__/
+*.pyc
+.venv/
+dist/

@@ -4,6 +4,15 @@
 
 Sistema Linux live de 64 bits com base Debian 13.7, Xfce e área de trabalho personalizada
 
+## 🎮 SnoopyOS Games 0.2 (em desenvolvimento)
+
+A nova edição Games está sendo preparada com widgets GTK leves para CPU, RAM e espaço livre, além de modo FPS reversível e limpeza segura de miniaturas/temporários antigos ao iniciar jogos pelo lançador Games
+
+**FPS 1000 é uma meta, não uma garantia:** a taxa real depende da GPU, do jogo e dos drivers
+A ISO Games ainda precisa passar pelos testes de construção e boot antes da publicação
+
+[Código e instruções da edição Games](snoopyos/games/README.md) · [Workflow manual para gerar ISO Games](.github/workflows/publish-games.yml)
+
 ## Baixar a edição Lite
 
 [**Baixar SnoopyOS-0.1-Lite-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SnoopyOS-0.1-Lite-amd64.iso)
