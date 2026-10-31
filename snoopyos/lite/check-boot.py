@@ -96,7 +96,12 @@ with tempfile.TemporaryDirectory(prefix="snoopyos-boot-") as temporary:
             serial.sendall(b"live\n")
             wait_for(rb"snoopy@[^\r\n]*\$", 60)
             shell("""set -e
-grep -q 'SnoopyOS 0.1 Lite' /etc/os-release
+grep -Eq 'SnoopyOS 0\.(1 Lite|2 Games)' /etc/os-release
+if grep -q 'SnoopyOS 0.2 Games' /etc/os-release; then
+    test -f /usr/share/snoopyos/games.py
+    python3 /usr/share/snoopyos/games.py status
+    test -f /usr/share/applications/snoopyos-games.desktop
+fi
 test -z "$(dpkg --audit)"
 apt-get -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache= check
 for app in xfce4-terminal thunar firefox-esr calamares; do command -v "$app"; done
