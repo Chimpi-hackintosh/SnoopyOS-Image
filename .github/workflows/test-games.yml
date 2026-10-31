@@ -1,0 +1,27 @@
+name: Verificar SnoopyOS Games
+
+on:
+  pull_request:
+    paths:
+      - 'snoopyos/games/**'
+      - 'snoopyos/lite/**'
+      - 'snoopyos/remasterizar-iso.py'
+      - '.github/workflows/test-games.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verificar sintaxe Python
+        run: |
+          python3 -m compileall -q snoopyos/games snoopyos/remasterizar-iso.py snoopyos/lite/check-boot.py
+      - name: Testar limpeza segura e restauração do modo FPS
+        run: python3 -m unittest discover -s snoopyos/games -p 'test_*.py' -v
+      - name: Conferir scripts shell
+        run: bash -n snoopyos/lite/build.sh snoopyos/games/build.sh
