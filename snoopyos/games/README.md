@@ -1,4 +1,4 @@
-# 🐾 SnoopyOS Games 0.2 (em desenvolvimento)
+# 🐾 SnoopyOS Games 0.2 Preview
 
 Edição gamer do SnoopyOS, derivada da base Debian/Xfce da versão Lite
 
@@ -36,4 +36,9 @@ sudo bash snoopyos/games/build.sh /caminho/debian-live-13.7.0-amd64-xfce.iso /ca
 
 A receita mantém verificação SHA-256 da base, o limite da ISO menor que 2 GiB e testes de boot antes da publicação. Instalação completa em disco ainda não validada
 
-**Estado:** código inicial da edição Games, ainda não uma ISO Games verificada
+**Estado:** [ISO Games Preview publicada em 31/10/2026](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/tag/v0.2-games.1), com SHA-256 e boot UEFI/QEMU verificados pelo workflow
+
+[Baixar a ISO Games](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.2-games.1/SnoopyOS-0.2-Games-amd64.iso) · [Conferir o SHA-256](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.2-games.1/SHA256SUMS.txt)
+
+A instalação completa em disco permanece sem validação. Correções posteriores no código exigem uma nova construção para aparecer na ISO
+

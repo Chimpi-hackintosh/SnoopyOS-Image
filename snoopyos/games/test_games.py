@@ -6,6 +6,7 @@ import os
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 MODULE = Path(__file__).with_name("games.py")
 SPEC = importlib.util.spec_from_file_location("snoopyos_games", MODULE)
@@ -13,6 +14,28 @@ games = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(games)
 
 class GamesTests(unittest.TestCase):
+    def test_cpu_guest_time_is_not_counted_twice(self):
+        # Linux already includes guest/guest_nice in user/nice respectively.
+        before = "cpu 100 20 30 400 10 5 5 0 40 5\n"
+        after = "cpu 140 25 30 455 10 5 5 0 80 10\n"
+        with patch.object(games.Path, "read_text", side_effect=[before, after]):
+            old_total, old_idle = games.read_cpu()
+            total, idle = games.read_cpu()
+        self.assertEqual((old_total, old_idle), (570, 410))
+        self.assertEqual((total, idle), (670, 465))
+        self.assertAlmostEqual(100 * (1 - (idle - old_idle) / (total - old_total)), 45)
+
+    def test_cpu_counters_without_optional_fields(self):
+        with patch.object(games.Path, "read_text", return_value="cpu 100 20 30 400\n"):
+            self.assertEqual(games.read_cpu(), (550, 400))
+
+    def test_cpu_unavailable_or_malformed(self):
+        for content in ("", "cpu 1 2\n", "cpu invalid counters\n"):
+            with self.subTest(content=content), patch.object(games.Path, "read_text", return_value=content):
+                self.assertEqual(games.read_cpu(), (0, 0))
+        with patch.object(games.Path, "read_text", side_effect=OSError("unavailable")):
+            self.assertEqual(games.read_cpu(), (0, 0))
+
     def test_cleanup_only_older_regular_files(self):
         with tempfile.TemporaryDirectory() as temp:
             directory = Path(temp) / "thumbnails"
@@ -66,3 +89,4 @@ class GamesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

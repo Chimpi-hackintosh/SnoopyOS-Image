@@ -64,7 +64,9 @@ def read_cpu() -> tuple[int, int]:
     try:
         fields = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
         times = [int(number) for number in fields]
-        return sum(times), times[3] + (times[4] if len(times) > 4 else 0)
+        # guest and guest_nice are already included in user and nice by Linux.
+        # Sum user through steal only, avoiding duplicate guest CPU time.
+        return sum(times[:8]), times[3] + (times[4] if len(times) > 4 else 0)
     except (OSError, ValueError, IndexError):
         return 0, 0
 
@@ -306,3 +308,4 @@ if __name__ == "__main__":
     except (ValueError, OSError) as error:
         print(f"SnoopyOS Games: {error}", file=sys.stderr)
         sys.exit(1)
+
