@@ -1,0 +1,91 @@
+name: Construir e publicar SnoopyOS Games Preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snoopyos-games
+  cancel-in-progress: false
+
+jobs:
+  games-iso:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar dependências de construção e emulação
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get update -qq
+          sudo apt-get install -y xorriso squashfs-tools qemu-system-x86 ovmf python3-pil
+          mkdir -p dist
+      - name: Verificar código e scripts do Games
+        run: |
+          python3 -m compileall -q snoopyos/games snoopyos/remasterizar-iso.py
+          python3 -m unittest discover -s snoopyos/games -p 'test_*.py' -v
+          bash -n snoopyos/lite/build.sh snoopyos/games/build.sh
+      - name: Baixar a base Debian com verificação SHA-256
+        run: |
+          URL=$(python3 -c 'import json; print(json.load(open("snoopyos/remaster/BASE-DEBIAN.json"))["url"])')
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 30 "$URL" -o "$RUNNER_TEMP/debian-base.iso"
+          python3 - "$RUNNER_TEMP/debian-base.iso" <<'PY'
+          import hashlib,json,sys
+          expected=json.load(open('snoopyos/remaster/BASE-DEBIAN.json'))['sha256']
+          with open(sys.argv[1],'rb') as source:
+              digest=hashlib.file_digest(source,'sha256').hexdigest()
+          assert digest==expected, f'SHA da base inválido: {digest}'
+          print('Base Debian validada:', digest)
+          PY
+      - name: Criar SnoopyOS Games 0.2
+        run: |
+          sudo bash snoopyos/games/build.sh "$RUNNER_TEMP/debian-base.iso" "$GITHUB_WORKSPACE/dist/SnoopyOS-0.2-Games-amd64.iso"
+          sudo chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE/dist"
+      - name: Conferir boot UEFI, Xfce e widgets com QEMU
+        run: |
+          python3 -u snoopyos/lite/check-boot.py dist/SnoopyOS-0.2-Games-amd64.iso dist
+          cp dist/SnoopyOS-Lite-desktop.png dist/SnoopyOS-Games-desktop.png
+          cp dist/SnoopyOS-Lite-menu.png dist/SnoopyOS-Games-menu.png
+      - name: Conferir o limite e gerar manifesto da ISO
+        run: |
+          cd dist
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          p=Path('SnoopyOS-0.2-Games-amd64.iso')
+          assert 0<p.stat().st_size<2*1024**3, 'ISO Games maior que 2 GiB'
+          with p.open('rb') as f:
+              checksum=hashlib.file_digest(f,'sha256').hexdigest()
+          Path('SHA256SUMS.txt').write_text(f'{checksum}  {p.name}\n')
+          Path('SnoopyOS-Games-info.json').write_text(json.dumps({
+              'edition':'Games 0.2 Preview','sizeBytes':p.stat().st_size,
+              'sha256':checksum,'bootTested':'UEFI/QEMU','installedToDisk':False,
+              'fpsGuaranteed':False},indent=2)+'\n')
+          print('Imagem verificada:',p.stat().st_size,'bytes')
+          PY
+          sha256sum --check SHA256SUMS.txt
+      - name: Salvar logs de validação
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: SnoopyOS-Games-verificacao
+          retention-days: 14
+          path: |
+            dist/*.json
+            dist/*.log
+            dist/*.txt
+            dist/*.png
+      - name: Publicar prévia apenas se todos os testes passaram
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v0.2-games.$GITHUB_RUN_NUMBER"
+          gh release create "$TAG" \
+            dist/SnoopyOS-0.2-Games-amd64.iso dist/SHA256SUMS.txt \
+            dist/SnoopyOS-Games-info.json dist/SnoopyOS-Games-desktop.png \
+            dist/SnoopyOS-Games-menu.png \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "SnoopyOS Games 0.2 Preview" --prerelease \
+            --notes "Edição Games com widgets GTK, modo FPS reversível e limpeza segura de miniaturas antigas. Sem garantia de FPS; instalação completa em disco não verificada. SHA-256 e testes UEFI/QEMU aprovados."
