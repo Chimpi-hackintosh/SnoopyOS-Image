@@ -92,6 +92,15 @@ def main():
 
         print("Preparando a personalização do sistema e do instalador", flush=True)
         shutil.copytree(ROOT / "desktop", overlay / "usr/share/snoopyos")
+        shutil.copy2(ROOT.parent / "support_notice.py", overlay / "usr/share/snoopyos/support_notice.py")
+        if not args.games:
+            write("etc/skel/.config/autostart/snoopyos-support.desktop", """[Desktop Entry]
+Type=Application
+Name=SnoopyOS security support
+Exec=/usr/bin/python3 /usr/share/snoopyos/support_notice.py --app SnoopyOS-Lite --version 0.1.3
+OnlyShowIn=XFCE;
+Terminal=false
+""")
         if args.games:
             shutil.copy2(ROOT / "games/games.py", overlay / "usr/share/snoopyos/games.py")
             write("etc/skel/.config/autostart/snoopyos-games.desktop", """[Desktop Entry]

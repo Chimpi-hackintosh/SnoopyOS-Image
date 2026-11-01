@@ -271,6 +271,10 @@ def show_widget() -> None:
     update()
     window.show_all()
     window.move(max(0, Gdk.Screen.get_default().get_width() - 380), 65)
+    if not (Path(__file__).resolve().parent / "support_notice.py").exists():
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from support_notice import attach_gtk
+    attach_gtk(window, "SnoopyOS-Games", "0.2.1")
     Gtk.main()
 
 

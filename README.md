@@ -70,4 +70,6 @@ Esta versão é uma prévia de desenvolvimento
 As ferramentas deste repositório seguem a [licença do projeto](LICENSE)
 Os pacotes Debian conservam suas próprias licenças
 
+## Aviso de suporte
 
+Aviso traduzido, data de 04/11/2026, versões e limites de distribuição em [SUPPORT.md](SUPPORT.md)
