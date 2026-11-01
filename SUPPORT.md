@@ -36,10 +36,14 @@ O catálogo público não inclui repositórios privados
 
 ## Validação local desta alteração
 
-8 testes do aviso e 8 testes existentes do Games aprovados
+11 testes do aviso e da versão da ISO, mais 8 testes existentes do Games aprovados
 
 Sintaxe Python conferida — nenhuma ISO nova foi construída nesta verificação local
 
 Os testes do aviso cobrem versões iguais e mais novas sem alerta, versões antigas com alerta, mudança exata de data, traduções, falha de rede e rejeição de links não oficiais
 
 `CHIMPI_SUPPORT_CHECK=0` desliga a consulta opcional — os modos de smoke test também evitam rede e avisos durante a compilação
+
+A versão instalada da ISO é gravada em support-version.json a partir do número real do workflow usado na tag da edição — builds locais sem tag não inventam uma versão
+
+Para um build local identificado, use SNOOPYOS_SUPPORT_VERSION=0.1.N para Lite ou 0.2.N para Games, com o número real da sua versão

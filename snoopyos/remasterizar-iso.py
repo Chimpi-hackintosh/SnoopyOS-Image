@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import gzip
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -13,6 +14,19 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 PARAMETERS = "locales=pt_BR.UTF-8 keyboard-layouts=br timezone=America/Sao_Paulo username=snoopy hostname=snoopyos"
+
+
+def support_version(games, environment=None):
+    """Match the tag produced by the Lite/Games release workflow, not a fixed build."""
+    environment = os.environ if environment is None else environment
+    explicit = environment.get("SNOOPYOS_SUPPORT_VERSION", "")
+    minor = "2" if games else "1"
+    if explicit:
+        if not re.fullmatch(r"0\." + minor + r"\.\d+", explicit):
+            raise ValueError("SNOOPYOS_SUPPORT_VERSION não corresponde à edição")
+        return explicit
+    number = environment.get("GITHUB_RUN_NUMBER", "")
+    return f"0.{minor}.{number}" if re.fullmatch(r"\d+", number) else None
 
 
 def digest(path, algorithm="sha256"):
@@ -47,6 +61,7 @@ def main():
         parser.error("--games exige a receita Lite com filesystem e manifesto")
     edition = "0.2 Games Preview" if args.games else ("0.1 Lite Preview" if lite else "0.1 Preview")
     short_version = "0.2" if args.games else "0.1"
+    current_support_version = support_version(args.games)
     boot_parameters = PARAMETERS + (" console=tty0 console=ttyS0,115200n8" if lite else "")
     base, output = args.base.resolve(), args.saida.resolve()
     for name in ("xorriso", "unsquashfs", "mksquashfs"):
@@ -93,11 +108,15 @@ def main():
         print("Preparando a personalização do sistema e do instalador", flush=True)
         shutil.copytree(ROOT / "desktop", overlay / "usr/share/snoopyos")
         shutil.copy2(ROOT.parent / "support_notice.py", overlay / "usr/share/snoopyos/support_notice.py")
-        if not args.games:
-            write("etc/skel/.config/autostart/snoopyos-support.desktop", """[Desktop Entry]
+        write("usr/share/snoopyos/support-version.json", json.dumps({
+            "app": "SnoopyOS-Games" if args.games else "SnoopyOS-Lite",
+            "version": current_support_version,
+        }))
+        if not args.games and current_support_version:
+            write("etc/skel/.config/autostart/snoopyos-support.desktop", f"""[Desktop Entry]
 Type=Application
 Name=SnoopyOS security support
-Exec=/usr/bin/python3 /usr/share/snoopyos/support_notice.py --app SnoopyOS-Lite --version 0.1.3
+Exec=/usr/bin/python3 /usr/share/snoopyos/support_notice.py --app SnoopyOS-Lite --version {current_support_version}
 OnlyShowIn=XFCE;
 Terminal=false
 """)
