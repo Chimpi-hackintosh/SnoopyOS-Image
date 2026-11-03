@@ -8,7 +8,7 @@ Antes dessa data o aviso informa que o suporte está prestes a terminar — depo
 
 O texto explica o risco de falhas sem afirmar que o usuário ou o aplicativo já foi infectado
 
-| Aplicativo | Versão publicada conferida em 01/11/2026 | Mínima |
+| Aplicativo | Versão publicada conferida em 02/11/2026 | Mínima |
 | --- | --- | --- |
 | SnoopyOS Lite | v0.1-lite.3 — prévia | 0.1.3 |
 | SnoopyOS Games | v0.2-games.1 — prévia | 0.2.1 |
