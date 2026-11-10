@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'snoopyos/games/**'
+      - 'snoopyos/eas/**'
       - 'snoopyos/lite/**'
       - 'snoopyos/remasterizar-iso.py'
       - '.github/workflows/test-games.yml'
@@ -20,8 +21,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verificar sintaxe Python
         run: |
-          python3 -m compileall -q snoopyos/games snoopyos/remasterizar-iso.py snoopyos/lite/check-boot.py
+          python3 -m compileall -q snoopyos/games snoopyos/eas snoopyos/remasterizar-iso.py snoopyos/lite/check-boot.py
       - name: Testar limpeza segura e restauração do modo FPS
         run: python3 -m unittest discover -s snoopyos/games -p 'test_*.py' -v
+      - name: Testar Central EAS e Clima
+        run: python3 -m unittest discover -s snoopyos/eas -p 'test_*.py' -v
       - name: Conferir scripts shell
         run: bash -n snoopyos/lite/build.sh snoopyos/games/build.sh
