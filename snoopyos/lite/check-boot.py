@@ -96,7 +96,11 @@ with tempfile.TemporaryDirectory(prefix="snoopyos-boot-") as temporary:
             serial.sendall(b"live\n")
             wait_for(rb"snoopy@[^\r\n]*\$", 60)
             shell("""set -e
-grep -Eq 'SnoopyOS 0\.(1 Lite|2 Games)' /etc/os-release
+grep -Eq 'SnoopyOS 0[.](1 Lite|2 Games)' /etc/os-release
+if test -e /usr/share/applications/org.snoopyos.EAS.desktop; then
+    PYTHONPATH=/usr/share/snoopyos/eas python3 -B -c 'import eas; assert eas.SOUND_PROFILE == "América (Estados Unidos)"'
+    command -v pw-play || command -v paplay || command -v aplay
+fi
 if grep -q 'SnoopyOS 0.2 Games' /etc/os-release; then
     test -f /usr/share/snoopyos/games.py
     python3 /usr/share/snoopyos/games.py status

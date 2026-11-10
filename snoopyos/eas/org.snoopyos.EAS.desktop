@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Central EAS e Clima
+Comment=Avisos meteorológicos, previsão do tempo e teste de som
+Exec=/usr/bin/python3 /usr/share/snoopyos/eas/eas.py
+Icon=dialog-warning
+Terminal=false
+StartupNotify=true
+Categories=Utility;
+Keywords=clima;tempo;alertas;emergência;

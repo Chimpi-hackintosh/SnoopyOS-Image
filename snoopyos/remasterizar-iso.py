@@ -92,6 +92,10 @@ def main():
 
         print("Preparando a personalização do sistema e do instalador", flush=True)
         shutil.copytree(ROOT / "desktop", overlay / "usr/share/snoopyos")
+        shutil.copytree(ROOT / "eas", overlay / "usr/share/snoopyos/eas",
+                        ignore=shutil.ignore_patterns("*.desktop", "__pycache__"))
+        write("usr/share/applications/org.snoopyos.EAS.desktop",
+              (ROOT / "eas/org.snoopyos.EAS.desktop").read_text(encoding="utf-8"))
         if args.games:
             shutil.copy2(ROOT / "games/games.py", overlay / "usr/share/snoopyos/games.py")
             write("etc/skel/.config/autostart/snoopyos-games.desktop", """[Desktop Entry]
@@ -141,6 +145,9 @@ Hidden=true
 Base Debian 13.7 amd64 com Xfce/X11 e personalização SnoopyOS
 
 O menu Snoopy + abre os aplicativos e o Terminal está disponível na barra e na área de trabalho
+
+Abra Central EAS e Clima no menu para consultar a previsão e os avisos meteorológicos da cidade
+O botão Testar som usa o perfil América (Estados Unidos) nas regiões Brasil e Estados Unidos
 
 Atalhos: Ctrl + Alt + T abre o Terminal e Super abre o menu
 
@@ -201,8 +208,10 @@ unpack:
         command(["mksquashfs", str(overlay), str(layer), "-all-root", "-noappend",
                  "-comp", "xz", "-b", "1M", "-processors", "2", "-no-progress"])
         listing = command(["unsquashfs", "-ls", str(layer)])
-        if "usr/share/snoopyos/aplicar.py" not in listing:
-            raise RuntimeError("A camada personalizada está incompleta")
+        for path in ("usr/share/snoopyos/aplicar.py", "usr/share/snoopyos/eas/eas.py",
+                     "usr/share/snoopyos/eas/eas_data.py", "usr/share/applications/org.snoopyos.EAS.desktop"):
+            if path not in listing:
+                raise RuntimeError(f"Arquivo ausente na camada personalizada: {path}")
 
         grub = extract("/boot/grub/grub.cfg")
         original_grub = grub.read_text()

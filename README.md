@@ -37,6 +37,14 @@ Papel de parede azul com curvas verdes e azuis, barra creme, menu Snoopy + e ata
 - `Super` abre o menu
 - Mantém Thunar, Firefox ESR em português, áudio, rede e Calamares
 
+## Central EAS e Clima
+
+Nas imagens Lite e Games construídas com esta receita, abra **Central EAS e Clima** no menu Snoopy +
+
+- Brasil e Estados Unidos compartilham o perfil de som **América (Estados Unidos)**. O botão **Testar som** toca localmente um sinal de três pulsos inspirado no vídeo, sem os códigos oficiais do EAS
+- Selecione o país e busque sua cidade para consultar as condições atuais e a previsão de três dias. A consulta usa a cidade selecionada e suas coordenadas. [Dados do Open-Meteo, CC BY 4.0](https://open-meteo.com/)
+- Enquanto a central está aberta, a aba **Alertas** consulta os avisos oficiais para o ponto de referência da cidade. Novos avisos aparecem na área de trabalho e podem tocar o som se a opção estiver ligada. [INMET no Brasil](https://avisos.inmet.gov.br/) · [National Weather Service nos Estados Unidos](https://www.weather.gov/alerts)
+
 ## Como a imagem ficou menor
 
 Foram removidos LibreOffice, ajuda e traduções extras, fontes Noto adicionais/CJK, métodos de entrada IBus e parte dos firmwares
