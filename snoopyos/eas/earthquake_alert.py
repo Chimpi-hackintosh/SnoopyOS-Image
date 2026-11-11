@@ -8,9 +8,6 @@ from pathlib import Path
 import urllib.request
 import urllib.error
 
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib, Gdk
 
 FEED_URL = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_hour.geojson"
 POLL_SECONDS = 120
@@ -90,6 +87,9 @@ def remember(event_id: str) -> None:
     SEEN_FILE.write_text(json.dumps(values[-150:]), encoding="utf-8")
 
 def show_alert(event: dict) -> None:
+    import gi
+    gi.require_version("Gtk", "3.0")
+    from gi.repository import Gtk, GLib
     dialog = Gtk.MessageDialog(
         parent=None,
         flags=Gtk.DialogFlags.MODAL,
@@ -105,7 +105,7 @@ def show_alert(event: dict) -> None:
         "Um terremoto foi detectado.\n"
         f"País/região: {event['flag']} {event['country']}\n"
         f"Local: {event['place']}\n"
-        f" magnitude {event['magnitude']:.1f}\n\n"
+        f"\nMagnitude: {event['magnitude']:.1f}\n\n"
         "Fique em calma e vá para um lugar seguro. "
         "Siga as orientações das autoridades locais.\n\n"
         "Para segurança de todos, este alerta será encerrado automaticamente "
@@ -135,9 +135,12 @@ class Monitor:
         return True
 
 def main():
+    import gi
+    gi.require_version("Gtk", "3.0")
+    from gi.repository import Gtk, GLib, Gdk
     Gdk.set_program_class("SnoopyOS-EAS")
-    Monitor()
-    GLib.timeout_add_seconds(POLL_SECONDS, lambda: Monitor().check())
+    monitor = Monitor()
+    GLib.timeout_add_seconds(POLL_SECONDS, monitor.check)
     Gtk.main()
 
 if __name__ == "__main__":
