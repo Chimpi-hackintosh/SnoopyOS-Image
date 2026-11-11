@@ -35,7 +35,9 @@ def support_autostart(app, version):
     """Create the first-login notice entry for either SnoopyOS edition."""
     if app not in {"SnoopyOS-Lite", "SnoopyOS-Games"}:
         raise ValueError("Edição SnoopyOS inválida")
-    if not isinstance(version, str) or not re.fullmatch(r"0\\.[12]\\.\\d+", version):
+    expected_minor = "1" if app == "SnoopyOS-Lite" else "2"
+    pattern = r"0\." + expected_minor + r"\.\d+"
+    if not isinstance(version, str) or not re.fullmatch(pattern, version):
         raise ValueError("Versão de suporte SnoopyOS inválida")
     return f"""[Desktop Entry]
 Type=Application
