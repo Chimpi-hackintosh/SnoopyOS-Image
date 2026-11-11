@@ -13,6 +13,10 @@ Edição gamer do SnoopyOS, derivada da base Debian/Xfce da versão Lite
 - Não toca em saves, shaders dos jogos, Downloads, Steam, Documentos nem configurações pessoais
 - Python 3 e GTK3/PyGObject, sem Electron nem serviço pesado
 
+## Alertas de terremoto
+
+O monitor EAS é iniciado automaticamente no Xfce, consulta dados globais do USGS e exibe magnitude e região para eventos a partir de 4.5. O alerta é informativo e não desliga o computador. Consulte [a documentação](../eas/README.md).
+
 ## Executar
 
 ```bash
