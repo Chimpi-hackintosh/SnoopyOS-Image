@@ -29,6 +29,22 @@ def support_version(games, environment=None):
     return f"0.{minor}.{number}" if re.fullmatch(r"\d+", number) else None
 
 
+
+
+def support_autostart(app, version):
+    """Create the first-login notice entry for either SnoopyOS edition."""
+    if app not in {"SnoopyOS-Lite", "SnoopyOS-Games"}:
+        raise ValueError("Edição SnoopyOS inválida")
+    if not isinstance(version, str) or not re.fullmatch(r"0\\.[12]\\.\\d+", version):
+        raise ValueError("Versão de suporte SnoopyOS inválida")
+    return f"""[Desktop Entry]
+Type=Application
+Name=SnoopyOS security support
+Exec=/usr/bin/python3 /usr/share/snoopyos/support_notice.py --app {app} --version {version}
+OnlyShowIn=XFCE;
+Terminal=false
+"""
+
 def digest(path, algorithm="sha256"):
     value = hashlib.new(algorithm)
     with path.open("rb") as stream:
@@ -112,14 +128,10 @@ def main():
             "app": "SnoopyOS-Games" if args.games else "SnoopyOS-Lite",
             "version": current_support_version,
         }))
-        if not args.games and current_support_version:
-            write("etc/skel/.config/autostart/snoopyos-support.desktop", f"""[Desktop Entry]
-Type=Application
-Name=SnoopyOS security support
-Exec=/usr/bin/python3 /usr/share/snoopyos/support_notice.py --app SnoopyOS-Lite --version {current_support_version}
-OnlyShowIn=XFCE;
-Terminal=false
-""")
+        if current_support_version:
+            support_app = "SnoopyOS-Games" if args.games else "SnoopyOS-Lite"
+            write("etc/skel/.config/autostart/snoopyos-support.desktop",
+                  support_autostart(support_app, current_support_version))
         if args.games:
             shutil.copy2(ROOT / "games/games.py", overlay / "usr/share/snoopyos/games.py")
             write("etc/skel/.config/autostart/snoopyos-games.desktop", """[Desktop Entry]
