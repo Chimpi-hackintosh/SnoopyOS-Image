@@ -1,6 +1,8 @@
 import copy
 import datetime as dt
+import importlib.util
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 import support_notice as support
@@ -62,6 +64,7 @@ class SupportNoticeTests(unittest.TestCase):
         result = support.with_releases(support.POLICY, "OpenCore-Helper", [candidate])
         self.assertIsNotNone(support.notice("OpenCore-Helper", "3.0.2", result))
         self.assertEqual(support.release_version("v0.1-lite.3", "lite"), "0.1.3")
+        self.assertEqual(support.release_version("v0.2-games.1", "games"), "0.2.1")
         self.assertIsNone(support.release_version("v0.2-games.1", "lite"))
 
     def test_smoke_flags_never_start_network(self):
@@ -69,6 +72,20 @@ class SupportNoticeTests(unittest.TestCase):
             self.assertFalse(support.enabled())
         with patch.dict(support.os.environ, {"CHIMPI_SUPPORT_CHECK": "0"}):
             self.assertFalse(support.enabled())
+
+    def test_both_snoopyos_editions_install_the_support_autostart(self):
+        script = Path(__file__).resolve().parents[1] / "snoopyos" / "remasterizar-iso.py"
+        spec = importlib.util.spec_from_file_location("snoopyos_remaster", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        for app, version in [("SnoopyOS-Lite", "0.1.3"), ("SnoopyOS-Games", "0.2.1")]:
+            entry = module.support_autostart(app, version)
+            self.assertIn(f"--app {app} --version {version}", entry)
+            self.assertIn("OnlyShowIn=XFCE;", entry)
+        with self.assertRaises(ValueError):
+            module.support_autostart("unknown", "0.1.3")
+        with self.assertRaises(ValueError):
+            module.support_autostart("SnoopyOS-Games", "0.1.3")
 
 
 if __name__ == "__main__":
