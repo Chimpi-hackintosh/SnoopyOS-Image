@@ -13,6 +13,10 @@ A ISO Games ainda precisa passar pelos testes de construção e boot antes da pu
 
 [Código e instruções da edição Games](snoopyos/games/README.md) · [Workflow manual para gerar ISO Games](.github/workflows/publish-games.yml)
 
+## 🌎 Earthquake Alert System (EAS)
+
+As edições Lite e Games incluem monitor informativo de terremotos globais com dados do USGS, magnitude e país/região. O aviso não desliga o computador e não substitui alertas oficiais. Consulte [a documentação do EAS](snoopyos/eas/README.md).
+
 ## Baixar a edição Lite
 
 [**Baixar SnoopyOS-0.1-Lite-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SnoopyOS-0.1-Lite-amd64.iso)
