@@ -21,6 +21,10 @@ jobs:
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
+      - name: Validar monitor EAS e scripts de remasterização
+        run: |
+          python3 -m compileall -q snoopyos/eas snoopyos/remasterizar-iso.py
+          python3 -m unittest discover -s snoopyos/eas -p 'test_*.py' -v
       - name: Preparar ferramentas e espaço
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc

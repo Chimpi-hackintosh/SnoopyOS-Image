@@ -92,6 +92,20 @@ def main():
 
         print("Preparando a personalização do sistema e do instalador", flush=True)
         shutil.copytree(ROOT / "desktop", overlay / "usr/share/snoopyos")
+        # Monitor global de terremotos, compartilhado pelas edições Lite e Games.
+        shutil.copy2(ROOT / "eas/earthquake_alert.py", overlay / "usr/share/snoopyos/earthquake_alert.py")
+        eas_autostart = """[Desktop Entry]
+Type=Application
+Name=SnoopyOS Earthquake Alert System
+Comment=Alertas informativos de terremotos do USGS
+Exec=/usr/bin/python3 /usr/share/snoopyos/earthquake_alert.py
+OnlyShowIn=XFCE;
+Terminal=false
+StartupNotify=false
+X-GNOME-Autostart-enabled=true
+"""
+        write("etc/skel/.config/autostart/snoopyos-eas.desktop", eas_autostart)
+        write("etc/xdg/autostart/snoopyos-eas.desktop", eas_autostart)
         if args.games:
             shutil.copy2(ROOT / "games/games.py", overlay / "usr/share/snoopyos/games.py")
             write("etc/skel/.config/autostart/snoopyos-games.desktop", """[Desktop Entry]

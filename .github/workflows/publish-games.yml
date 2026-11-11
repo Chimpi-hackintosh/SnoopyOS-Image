@@ -24,8 +24,9 @@ jobs:
           mkdir -p dist
       - name: Verificar código e scripts do Games
         run: |
-          python3 -m compileall -q snoopyos/games snoopyos/remasterizar-iso.py
+          python3 -m compileall -q snoopyos/games snoopyos/eas snoopyos/remasterizar-iso.py
           python3 -m unittest discover -s snoopyos/games -p 'test_*.py' -v
+          python3 -m unittest discover -s snoopyos/eas -p 'test_*.py' -v
           bash -n snoopyos/lite/build.sh snoopyos/games/build.sh
       - name: Baixar a base Debian com verificação SHA-256
         run: |

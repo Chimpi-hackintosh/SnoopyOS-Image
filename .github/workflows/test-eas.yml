@@ -1,0 +1,25 @@
+name: Testar SnoopyOS EAS
+
+on:
+  pull_request:
+    paths:
+      - "snoopyos/eas/**"
+      - "snoopyos/remasterizar-iso.py"
+      - ".github/workflows/test-eas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  eas-tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compilar scripts
+        run: python -m compileall -q snoopyos/eas snoopyos/remasterizar-iso.py
+      - name: Executar testes unitários sem rede
+        run: python -m unittest discover -s snoopyos/eas -p "test_*.py" -v
