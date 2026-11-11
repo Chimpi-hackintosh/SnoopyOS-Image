@@ -28,6 +28,10 @@ Alguns computadores físicos precisarão instalar firmware adicional para gráfi
 O repositório local que o Calamares usa para instalar GRUB é preservado e seus índices são atualizados
 A lista exata dos pacotes selecionados está em `pacotes-removidos.json`
 
+## Alertas de terremoto
+
+O SnoopyOS Lite inclui o monitor EAS, que consulta o feed global do USGS e mostra avisos informativos de terremotos com magnitude dinâmica e região identificada. Requer internet. O computador não é desligado automaticamente. Consulte [a documentação](../eas/README.md).
+
 ## Usar
 
 Baixe a ISO única e o `SHA256SUMS.txt` na Release
