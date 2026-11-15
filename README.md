@@ -4,22 +4,26 @@
 
 Sistema Linux live de 64 bits com base Debian 13.7, Xfce e área de trabalho personalizada
 
-## 🎮 SnoopyOS Games 0.2 (em desenvolvimento)
+## 🎮 SnoopyOS Games 0.2 Preview
 
-A nova edição Games está sendo preparada com widgets GTK leves para CPU, RAM e espaço livre, além de modo FPS reversível e limpeza segura de miniaturas/temporários antigos ao iniciar jogos pelo lançador Games
+A edição Games inclui widgets GTK leves para CPU, RAM e espaço livre, além de modo FPS reversível e limpeza segura de miniaturas/temporários antigos ao iniciar jogos pelo lançador Games
 
 **FPS 1000 é uma meta, não uma garantia:** a taxa real depende da GPU, do jogo e dos drivers
-A ISO Games ainda precisa passar pelos testes de construção e boot antes da publicação
+A primeira ISO Games foi publicada em 31/10/2026, após os testes de construção, SHA-256 e boot UEFI/QEMU do workflow. A instalação completa em disco ainda não foi validada
+
+[**Baixar SnoopyOS-0.2-Games-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.2-games.1/SnoopyOS-0.2-Games-amd64.iso) · [SHA-256](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.2-games.1/SHA256SUMS.txt) · [Notas da prévia Games](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/tag/v0.2-games.1)
+
+Alterações posteriores no código só entram na ISO depois de uma nova construção
 
 [Código e instruções da edição Games](snoopyos/games/README.md) · [Workflow manual para gerar ISO Games](.github/workflows/publish-games.yml)
 
 ## Baixar a edição Lite
 
-[**Baixar SnoopyOS-0.1-Lite-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SnoopyOS-0.1-Lite-amd64.iso)
+[**Baixar SnoopyOS-0.1-Lite-amd64.iso**](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.3/SnoopyOS-0.1-Lite-amd64.iso)
 
 Tamanho: **1,954 GiB** — **2.097.676.288 bytes**, abaixo de 2 GiB
 
-[SHA-256](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.2/SHA256SUMS.txt) · [Notas e arquivos da versão](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/tag/v0.1-lite.2)
+[SHA-256](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/download/v0.1-lite.3/SHA256SUMS.txt) · [Notas e arquivos da versão](https://github.com/Chimpi-hackintosh/SnoopyOS-Image/releases/tag/v0.1-lite.3)
 
 Baixe a ISO como um único arquivo e use-a como unidade óptica de uma máquina virtual de 64 bits
 A configuração de teste usa 3 GiB de RAM
@@ -66,3 +70,6 @@ Esta versão é uma prévia de desenvolvimento
 As ferramentas deste repositório seguem a [licença do projeto](LICENSE)
 Os pacotes Debian conservam suas próprias licenças
 
+## Aviso de suporte
+
+Aviso traduzido, data de 04/11/2026, versões e limites de distribuição em [SUPPORT.md](SUPPORT.md)

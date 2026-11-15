@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 from pathlib import Path
 import shutil
@@ -64,7 +65,9 @@ def read_cpu() -> tuple[int, int]:
     try:
         fields = Path("/proc/stat").read_text().splitlines()[0].split()[1:]
         times = [int(number) for number in fields]
-        return sum(times), times[3] + (times[4] if len(times) > 4 else 0)
+        # guest and guest_nice are already included in user and nice by Linux.
+        # Sum user through steal only, avoiding duplicate guest CPU time.
+        return sum(times[:8]), times[3] + (times[4] if len(times) > 4 else 0)
     except (OSError, ValueError, IndexError):
         return 0, 0
 
@@ -269,6 +272,13 @@ def show_widget() -> None:
     update()
     window.show_all()
     window.move(max(0, Gdk.Screen.get_default().get_width() - 380), 65)
+    try:
+        build = json.loads((Path(__file__).resolve().parent / "support-version.json").read_text(encoding="utf-8"))
+        if build.get("app") == "SnoopyOS-Games" and build.get("version"):
+            from support_notice import attach_gtk
+            attach_gtk(window, "SnoopyOS-Games", build["version"])
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass  # A source checkout without a release tag has no known installed version.
     Gtk.main()
 
 
@@ -306,3 +316,4 @@ if __name__ == "__main__":
     except (ValueError, OSError) as error:
         print(f"SnoopyOS Games: {error}", file=sys.stderr)
         sys.exit(1)
+
